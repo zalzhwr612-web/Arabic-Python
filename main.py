@@ -25,15 +25,28 @@ jobs:
         pip install --upgrade pip
         pip install buildozer kivy
 
-    - name: Initialize Buildozer Spec
+    - name: Prepare Main Entry and Buildozer Spec
       run: |
+        # إنشاء ملف main.py ليشغل الكود العربي تلقائياً
+        cat << 'EOF' > main.py
+        import arabic_python
+        if __name__ == "__main__":
+            try:
+                arabic_python.تشغيل_كود_عربي("app.عرب")
+            except Exception as e:
+                print("Error:", e)
+        EOF
+
+        # إنشاء وتحديث ملف buildozer.spec
         buildozer init
         sed -i 's/title = My Application/title = تطبيق عربي/g' buildozer.spec
         sed -i 's/package.name = myapp/package.name = arabicapp/g' buildozer.spec
+        sed -i 's/requirements = python3,kivy/requirements = python3,kivy/g' buildozer.spec
 
-    - name: Build APK
+    - name: Accept Android SDK Licenses & Build APK
       run: |
-        buildozer -v android debug
+        # قبول كافة تراخيص Android SDK تلقائياً
+        yes | buildozer -v android debug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
